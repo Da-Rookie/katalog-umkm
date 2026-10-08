@@ -80,3 +80,9 @@ Urutan yang disarankan: US-01, US-02, US-03, US-04, US-05, US-06, lalu fitur bon
 - **Pembuat: EKO & ADNAN**
 - **Link aplikasi: https://katalog-umkm-theta.vercel.app**
 - **Fitur bonus yang dikerjakan:**
+  - **US-07 (List Produk):** Halaman admin `/admin` memuat daftar produk langsung dari database Supabase secara server-side.
+  - **US-08 (Tambah Produk):** Form `/admin/produk/baru` untuk menambah produk baru ke database Supabase, terlindungi otentikasi login admin di server.
+  - **US-09 (Ubah Produk):** Form `/admin/produk/[id]/ubah` memuat data lama dan menyimpan perubahan ke database Supabase, terlindungi otentikasi login admin di server.
+  - **US-10 (Hapus Produk):** Tombol hapus pada tabel admin dilengkapi dialog konfirmasi dan menghapus data dari database Supabase, terlindungi otentikasi login admin di server.
+  - **US-11 (Filter Kategori & Pencarian):** Pengunjung dapat mencari produk berdasarkan nama serta menyaring produk berdasarkan kategori secara dinamis di halaman katalog.
+  - **US-12 (Pilih Jumlah):** Pengunjung dapat menentukan jumlah unit yang ingin dipesan (counter interaktif), menghitung total harga otomatis, dan pilihan jumlah beserta total harga otomatis tercantum di teks pesan WhatsApp.

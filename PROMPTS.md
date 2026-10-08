@@ -118,3 +118,79 @@ Buat file proxy.js di root proyek (Next.js 16). Semua rute /admin kecuali /admin
   1. Mengembalikan nilai variabel di `.env.example` ke template kosong tanpa nilai kredensial nyata (kredensial asli tetap aman di `.env.local`).
   2. Melakukan `git commit --amend` untuk memperbarui commit terakhir sehingga kredensial terhapus sepenuhnya dari riwayat commit Git lokal.
   3. Menjalankan ulang `git push` dan push berhasil diterima oleh GitHub tanpa melanggar aturan perlindungan rahasia.
+
+### [SENDIRI] US-07 List Produk di Halaman Admin dari Database
+**Prompt:**
+Ubah app/admin/page.jsx supaya daftar produk diambil langsung dari tabel "produk" di Supabase secara server-side menggunakan createServerClient. Tampilkan daftar produk menggunakan TabelProduk dan jika tabel kosong, tampilkan pesan bahwa belum ada produk di database.
+
+**Hasil:**
+- Halaman `app/admin/page.jsx` kini memuat produk dari database Supabase alih-alih data contoh `produkContoh`.
+- `components/TabelProduk.jsx` menampilkan seluruh produk lengkap dengan foto, nama, kategori, harga, dan tombol aksi.
+- Jika database belum memiliki produk, ditampilkan kotak pesan bahwa produk masih kosong.
+
+**Perbaikan:**
+- Menambahkan `export const dynamic = "force-dynamic"` agar daftar produk admin selalu terbarui seketika setelah aksi tambah, ubah, atau hapus.
+
+### [SENDIRI] US-08 Tambah Produk (Terkunci Login)
+**Prompt:**
+Buat Server Action tambahProduk di app/admin/actions.js yang terkunci login admin dan menyimpan produk baru ke database Supabase (nama, harga, kategori, foto_url, deskripsi). Sambungkan form di app/admin/produk/baru/page.jsx via components/FormProduk.jsx, lalu kembali ke /admin setelah tersimpan.
+
+**Hasil:**
+- Server Action `tambahProduk` berhasil dibuat dengan validasi autentikasi admin di server via `supabase.auth.getUser()`.
+- Validasi data memastikan nama produk terisi dan harga merupakan nilai numerik non-negatif.
+- `app/admin/produk/baru/page.jsx` dan `components/FormProduk.jsx` terhubung dengan action dan kembali ke `/admin` serta memicu `revalidatePath`.
+- `CatatanBelumAktif` dihapus dari halaman tambah produk.
+
+**Perbaikan:**
+- Menambahkan status `isPending` pada tombol simpan agar admin mendapatkan feedback visual saat proses penyimpanan sedang berlangsung.
+
+### [SENDIRI] US-09 Ubah Produk (Terkunci Login)
+**Prompt:**
+Buat Server Action ubahProduk di app/admin/actions.js yang terkunci login admin dan memperbarui data produk di Supabase berdasarkan id. Di app/admin/produk/[id]/ubah/page.jsx, ambil data lama produk dari database secara server-side dan isi form melalui components/FormProduk.jsx. Jika produk tidak ditemukan, panggil notFound().
+
+**Hasil:**
+- Halaman `app/admin/produk/[id]/ubah/page.jsx` mengambil produk lama dari Supabase dan menampilkannya di dalam form.
+- Server Action `ubahProduk` memverifikasi sesi login admin, lalu mengupdate data pada tabel `produk`.
+- Selesai simpan diarahkan kembali ke `/admin` dan path direvalidasi.
+- `CatatanBelumAktif` dihapus dari halaman ubah produk.
+
+**Perbaikan:**
+- Menyertakan hidden input `id` pada `components/FormProduk.jsx` jika mengedit produk agar ID produk dikirimkan secara tepat ke Server Action.
+
+### [SENDIRI] US-10 Hapus Produk (Terkunci Login)
+**Prompt:**
+Buat Server Action hapusProduk di app/admin/actions.js yang terkunci login admin dan menghapus produk dari database. Pada components/TabelProduk.jsx, buat tombol "Hapus" meminta konfirmasi dialog sebelum menghapus data.
+
+**Hasil:**
+- Server Action `hapusProduk` memverifikasi sesi login admin dan menghapus baris terkait di tabel `produk`.
+- Tombol "Hapus" pada `components/TabelProduk.jsx` menjalankan dialog browser `confirm()` sebelum formulir dikirimkan.
+- Setelah produk terhapus, halaman admin otomatis menampilkan daftar produk terbaru.
+
+**Perbaikan:**
+- Menambahkan `event.preventDefault()` jika admin membatalkan konfirmasi penghapusan sehingga request tidak terkirim ke server.
+
+### [SENDIRI] US-11 Filter Kategori dan Pencarian
+**Prompt:**
+Ubah app/page.jsx agar pengunjung dapat mencari produk berdasarkan nama melalui form pencarian dan menyaring produk berdasarkan kategori melalui tombol filter. Gunakan query parameter URL dan query Supabase.
+
+**Hasil:**
+- Input pencarian nama produk ditambahkan di samping judul "Produk kami", lengkap dengan tombol "Cari" dan "Reset".
+- Tombol filter kategori ("Semua", "Minuman", "Camilan", dll.) diekstrak secara dinamis dari produk yang ada di Supabase.
+- Pengunjung dapat mencari dan memfilter secara bersamaan atau terpisah.
+- Jika pencarian tidak menemukan hasil, pesan "Tidak ada produk yang cocok" ditampilkan.
+
+**Perbaikan:**
+- Menggunakan query database yang efisien (`.ilike("nama", ...)` dan `.eq("kategori", ...)`) sehingga pemfilteran dilakukan di sisi server dan URL dapat dibagikan langsung.
+
+### [SENDIRI] US-12 Pilih Jumlah Produk Sebelum Memesan
+**Prompt:**
+Ubah components/TombolWhatsApp.jsx agar pengunjung dapat memilih jumlah pesanan (counter interaktif). Hitung total harga otomatis dan cantumkan jumlah beserta total harga ke dalam format pesan otomatis WhatsApp.
+
+**Hasil:**
+- Tombol pemilih jumlah interaktif (`−` dan `+`) ditambahkan di atas tombol WhatsApp.
+- Total harga otomatis terkalkulasi secara real-time (`harga x jumlah`).
+- Tautan WhatsApp otomatis menghasilkan pesan: `Halo, saya ingin memesan <nama> sebanyak <jumlah> pcs (total <totalHarga>).`
+- Tombol utama menampilkan jumlah pesanan yang dipilih, misal: `Pesan via WhatsApp (2 pcs)`.
+
+**Perbaikan:**
+- Membatasi jumlah minimal pemesanan adalah 1 unit (`Math.max(1, prev - 1)`).
